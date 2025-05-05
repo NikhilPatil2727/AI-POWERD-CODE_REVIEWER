@@ -20,7 +20,8 @@ function App() {
     prism.highlightAll();
   }, []); // Runs only once on mount
   async function reviewCode() {
-    const response = await axios.post("https://ai-powerd-code-reviewer-backend.onrender.com", { code });
+    const response = await axios.post("https://ai-powerd-code-reviewer-backend.onrender.com/review", { code });
+
     setReivew(response.data);
   }
 
