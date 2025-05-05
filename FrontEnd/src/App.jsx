@@ -5,7 +5,6 @@ import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import prism from "prismjs";
-import axios from "axios";
 import "./App.css";
 
 function App() {
@@ -18,11 +17,28 @@ function App() {
 
   useEffect(() => {
     prism.highlightAll();
-  }, []); // Runs only once on mount
-  async function reviewCode() {
-    const response = await axios.post("https://ai-powerd-code-reviewer-backend.onrender.com/ai/get-review", { code });
+  }, []);
 
-    setReivew(response.data);
+  async function reviewCode() {
+    try {
+      const response = await fetch("https://ai-powerd-code-reviewer-backend.onrender.com/ai/get-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.text(); // assuming backend sends plain text/Markdown
+      setReivew(data);
+    } catch (error) {
+      console.error("Review failed:", error);
+      setReivew(`**Error:** ${error.message}`);
+    }
   }
 
   return (
@@ -42,17 +58,15 @@ function App() {
               width: "100%",
               height: "100%",
               border: "1px solid #ddd",
-
             }}
           />
         </div>
         <div className="review" onClick={reviewCode}>Review</div>
       </div>
       <div className="right">
-        <Markdown
-        rehypePlugins={[rehypeHighlight]}
-        
-        >{reivew}</Markdown>
+        <Markdown rehypePlugins={[rehypeHighlight]}>
+          {reivew}
+        </Markdown>
       </div>
     </main>
   );
